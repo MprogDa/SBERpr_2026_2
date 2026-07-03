@@ -12,4 +12,11 @@
 - Я как администратор системы хочу просматривать системные логи и статистику использования.
 - Я как администратор системы хочу удалять рабочие пространства.
 
-<img width="638" height="663" alt="image" src="https://github.com/user-attachments/assets/8d5f8968-4108-4f44-b12e-a3cb1035d261" />
+<img width="668" height="660" alt="image" src="https://github.com/user-attachments/assets/821cc9b2-e0ea-4248-9e12-aef9659b3f2e" />
+
+
+<img width="1281" height="610" alt="image" src="https://github.com/user-attachments/assets/d2f0c0f7-a44b-48e5-a353-71d1910b18e7" />
+
+<img width="1119" height="539" alt="image" src="https://github.com/user-attachments/assets/49cff4b3-347c-4b11-a8ad-e12b991a1a7a" />
+
+
