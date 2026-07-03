@@ -16,8 +16,6 @@
 
 
 
-<img width="1281" height="610" alt="image" src="https://github.com/user-attachments/assets/d2f0c0f7-a44b-48e5-a353-71d1910b18e7" />
-
-<img width="1119" height="539" alt="image" src="https://github.com/user-attachments/assets/49cff4b3-347c-4b11-a8ad-e12b991a1a7a" />
+<img width="1963" height="1618" alt="Диаграмма без названия-Страница-3" src="https://github.com/user-attachments/assets/c0aab0cb-0fcb-4073-96a6-f4371c212210" />
 
 
