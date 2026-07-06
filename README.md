@@ -16,9 +16,6 @@
 
 
 <img width="1921" height="888" alt="user1" src="https://github.com/user-attachments/assets/44104355-f0b4-4aeb-913b-973881b81064" />
-(не доделано)
-<img width="1323" height="601" alt="admin0" src="https://github.com/user-attachments/assets/3fadcc68-6b89-4da3-8268-669d8a8fe004" />
-
 
 ## Требования (не доделано)
 ### Функциональные требования
