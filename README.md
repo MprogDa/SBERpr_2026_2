@@ -20,7 +20,7 @@
 
 ---
 
-<img width="1921" height="888" alt="user1" src="https://github.com/user-attachments/assets/44104355-f0b4-4aeb-913b-973881b81064" />
+<img width="1951" height="927" alt="ммммммммфываываыв" src="https://github.com/user-attachments/assets/f621f2ed-6802-4357-a30a-d70c52667faa" />
 
 ---
 
