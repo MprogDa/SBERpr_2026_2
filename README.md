@@ -56,5 +56,61 @@
 ### Схема
 <img width="961" height="511" alt="6534534534534" src="https://github.com/user-attachments/assets/d339c00b-6349-4944-9916-496a351d8103" />
 
+## User (Пользователь)
+
+| Название атрибута | Тип данных | Описание    |
+| ----------------- | ---------- | ----------- |
+| id                | long       | PK          |
+| username          | String     |             |
+| password          | String     |             |
+| email             | String     |             |
+| role              | String     | user, admin |
+
+## Users_Boards
+
+| Название атрибута | Тип данных | Описание                                        |
+| ----------------- | ---------- | ----------------------------------------------- |
+| id                | long       | PK                                              |
+| id_user           | long       | FK                                              |
+| id_board          | long       | FK                                              |
+| user_rights       | String     | Создатель (владелец), редактор, только просмотр |
+
+## Boards
+| Название атрибута | Тип данных | Описание |
+| ----------------- | ---------- | -------- |
+| id                | long       | PK       |
+| title             | String     |          |
+| date_create       | DateTime   |          |
+
+## Columns
+
+| Название атрибута | Тип данных | Описание |
+| ----------------- | ---------- | -------- |
+| id                | long       | PK       |
+| title             | String     |          |
+| order             | int        |          |
+| id_board          | long       | FK       |
+
+## Tasks
+
+| Название атрибута | Тип данных | Описание |
+| ----------------- | ---------- | -------- |
+| id                | long       | PK       |
+| title             | String     |          |
+| text              | String     |          |
+| tags              | String     |          |
+| date_create       | DateTime   |          |
+| author            | long       | FK user  |
+| id_column         | long       | FK       |
+
+## Logs
+
+| Название атрибута | Тип данных | Описание |
+| ----------------- | ---------- | -------- |
+| id                | long       | PK       |
+| id_user           | long       | FK       |
+| action            | String     |          |
+| description       | String     |          |
+| date              | DateTime   |          |
 
 
