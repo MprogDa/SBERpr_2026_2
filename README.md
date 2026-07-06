@@ -40,3 +40,10 @@
 - Сборщик проектов: Maven
 - Для стилизации интерфейса используется Semantic UI
 
+
+## Сущности
+### Схема
+<img width="961" height="511" alt="6534534534534" src="https://github.com/user-attachments/assets/d339c00b-6349-4944-9916-496a351d8103" />
+
+
+
