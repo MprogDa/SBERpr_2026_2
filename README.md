@@ -54,7 +54,8 @@
 ---
 ## Сущности
 ### Схема
-<img width="961" height="511" alt="6534534534534" src="https://github.com/user-attachments/assets/d339c00b-6349-4944-9916-496a351d8103" />
+
+<img width="962" height="511" alt="r23rf24f23" src="https://github.com/user-attachments/assets/2556222d-80cf-4653-86e7-8d0df0950bd9" />
 
 ### User (Пользователь)
 
