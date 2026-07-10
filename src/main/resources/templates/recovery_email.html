@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Восстановление пароля</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 400px;">
+    <h3 class="ui header">Восстановление пароля</h3>
+
+    <div th:if="${param.error}" class="ui negative message">
+        <div class="header">Ошибка</div>
+        <p>Пользователь с таким email не найден.</p>
+    </div>
+
+    <p>Введите email, на который зарегистрирован аккаунт.</p>
+
+    <!-- Форма ввода email -->
+    <form th:action="@{/recovery}" method="post" class="ui form">
+        <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="example@mail.com" required>
+        </div>
+        <button type="submit" class="ui primary button fluid">Получить код</button>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="/login">Вернуться ко входу</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

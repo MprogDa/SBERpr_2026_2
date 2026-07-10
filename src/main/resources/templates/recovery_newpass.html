@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Новый пароль</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 400px;">
+    <h3 class="ui header">Установка нового пароля</h3>
+    <p>Придумайте новый пароль для входа в систему.</p>
+
+    <form th:action="@{/recovery/newpass}" method="post" class="ui form">
+        <div class="field">
+            <label>Новый пароль</label>
+            <input type="password" name="newPassword" placeholder="Минимум 6 символов" required>
+        </div>
+        <button type="submit" class="ui primary button fluid">Сменить пароль и войти</button>
+    </form>
+</div>
+</body>
+</html>

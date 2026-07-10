@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Главное окно</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body>
+<div class="ui container" style="margin-top: 100px;">
+    <div class="ui segment" style="padding: 60px;">
+        <!-- Заголовок страницы -->
+        <h1 class="ui huge header center aligned">Главное окно</h1>
+        <div class="ui divider"></div>
+
+        <!-- Сообщение об успешном удалении аккаунта -->
+        <div th:if="${param.deleted}" class="ui positive message" style="margin-bottom: 20px;">
+            <div class="header">Аккаунт удалён</div>
+            <p>Ваш аккаунт успешно удалён.</p>
+        </div>
+
+        <!-- Кнопки входа и регистрации -->
+        <div class="ui two buttons" style="margin-top: 40px;">
+            <a href="/login" class="ui large primary button">Вход</a>
+            <a href="/register" class="ui large button">Регистрация</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

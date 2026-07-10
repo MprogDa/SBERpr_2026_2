@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Рабочий стол</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        .sidebar {
+            background: #1b1c1d;
+            height: 100vh;
+            padding: 10px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 1.5em;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background: #2d2e2f;
+        }
+        .sidebar a.active {
+            background: #2185d0;
+        }
+    </style>
+</head>
+<body>
+<div class="ui grid" style="height: 100vh; margin: 0;">
+
+    <!-- Левая панель-->
+    <div class="one wide column sidebar">
+        <a href="/dashboard/profile" title="Профиль">👤</a>
+        <a href="/dashboard" class="active" title="Доски">📋</a>
+        <a th:if="${isAdmin}" href="/dashboard/users" title="Пользователи">👥</a>
+    </div>
+
+    <!-- Правая часть -->
+    <div class="fifteen wide column" style="padding: 20px;">
+
+        <!-- Верхняя панель-->
+        <div class="ui grid">
+            <div class="twelve wide column">
+                <form class="ui form">
+                    <div class="three fields">
+                        <div class="field">
+                            <input type="text" placeholder="Поиск по названию">
+                        </div>
+                        <div class="field">
+                            <input type="date" placeholder="Поиск по дате">
+                        </div>
+                        <div class="field">
+                            <input type="text" placeholder="Поиск по пользователю">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="four wide column right aligned">
+                <a href="/board/new" class="ui primary button">Добавить доску</a>
+            </div>
+        </div>
+
+        <!-- Список досок-->
+        <div class="ui grid" style="margin-top: 20px;">
+            <div class="four wide column" th:each="board : ${boards}">
+                <a th:href="@{/dashboard/board/{id}(id=${board.id})}" class="ui fluid card" style="height: 150px;">
+                    <div class="content center aligned">
+                        <div class="header" th:text="${board.title}">Название</div>
+                        <div class="meta">
+                            <span th:text="${#temporals.format(board.dateCreate, 'dd.MM.yyyy')}">Дата</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

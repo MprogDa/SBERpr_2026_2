@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 400px;">
+    <h3 class="ui header">Регистрация</h3>
+
+    <div th:if="${error != null}" class="ui negative message">
+        <div class="header">Ошибка</div>
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:action="@{/register}" method="post" class="ui form">
+        <div class="field">
+            <label>Username</label>
+            <input type="text" name="username" th:value="${username}" placeholder="Введите логин" required>
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" th:value="${email}" placeholder="example@mail.com" required>
+        </div>
+        <div class="field">
+            <label>Пароль</label>
+            <input type="password" name="password" placeholder="Придумайте пароль" required>
+        </div>
+        <div class="field">
+            <label>Повтор пароля</label>
+            <input type="password" name="confirmPassword" placeholder="Повторите пароль" required>
+        </div>
+        <button type="submit" class="ui primary button fluid">Дальше</button>
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="/login">Уже есть аккаунт? Войти</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

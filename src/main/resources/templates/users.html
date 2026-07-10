@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Пользователи</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        .sidebar {
+            background: #1b1c1d;
+            height: 100vh;
+            padding: 10px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 1.5em;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background: #2d2e2f;
+        }
+        .sidebar a.active {
+            background: #2185d0;
+        }
+    </style>
+</head>
+<body>
+<div class="ui grid" style="height: 100vh; margin: 0;">
+
+    <div class="one wide column sidebar">
+        <a href="/dashboard/profile" title="Профиль">👤</a>
+        <a href="/dashboard" title="Доски">📋</a>
+        <a href="/dashboard/users" class="active" title="Пользователи">👥</a>
+    </div>
+
+    <div class="fifteen wide column" style="padding: 40px;">
+        <h2 class="ui header">Список пользователей</h2>
+
+        <div class="ui segment">
+            <form class="ui form">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Поиск по имени</label>
+                        <input type="text" placeholder="Введите имя">
+                    </div>
+                    <div class="field">
+                        <label>Поиск по почте</label>
+                        <input type="text" placeholder="Введите email">
+                    </div>
+                    <div class="field">
+                        <label>Поиск по роли</label>
+                        <select class="ui dropdown">
+                            <option value="">Все роли</option>
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="ui primary button">Найти</button>
+            </form>
+        </div>
+
+        <!-- Таблица пользователей -->
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Статус</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Перебор всех пользователей -->
+            <tr th:each="u : ${users}">
+                <td>
+                    <a th:href="@{/dashboard/users/{id}/profile(id=${u.id})}" th:text="${u.username}" style="cursor: pointer;"></a>
+                </td>
+                <td th:text="${u.email}"></td>
+                <td th:text="${u.role}"></td>
+                <td>
+                    <span th:if="${u.isActive}">Активен</span>
+                    <span th:if="${!u.isActive}">Заблокирован</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

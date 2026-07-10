@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Профиль</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <!-- Стили для боковой панели -->
+    <style>
+        .sidebar {
+            background: #1b1c1d;
+            height: 100vh;
+            padding: 10px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 1.5em;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background: #2d2e2f;
+        }
+        .sidebar a.active {
+            background: #2185d0;
+        }
+    </style>
+</head>
+<body>
+<div class="ui grid" style="height: 100vh; margin: 0;">
+
+    <!-- Левая панель -->
+    <div class="one wide column sidebar">
+        <a href="/dashboard/profile" class="active" title="Профиль">👤</a>
+        <a href="/dashboard" title="Доски">📋</a>
+        <a th:if="${isAdmin}" href="/dashboard/users" title="Пользователи">👥</a>
+    </div>
+
+    <div class="fifteen wide column" style="padding: 40px;">
+
+        <h2 class="ui header">
+            <span th:if="${isOwnProfile != null and isOwnProfile}">Настройка профиля</span>
+            <span th:if="${isOwnProfile == null or !isOwnProfile}">Профиль пользователя</span>
+        </h2>
+
+        <!-- Сообщение об ошибке неверного старого пароля -->
+        <div th:if="${isOwnProfile != null and isOwnProfile and param.wrongPassword != null}" class="ui negative message" style="max-width: 500px;">
+            <div class="header">Ошибка смены пароля</div>
+            <p>Неверный старый пароль. Попробуйте ещё раз.</p>
+        </div>
+
+        <!-- Форма профиля  -->
+        <form th:action="${isOwnProfile != null and isOwnProfile} ? @{/dashboard/profile} : @{/dashboard/users/{id}/profile(id=${user.id})}"
+              method="post" class="ui form" style="max-width: 500px;">
+            <input type="hidden" name="id" th:value="${user.id}"/>
+
+            <div class="ui segment">
+                <h4 class="ui dividing header">Основные данные</h4>
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" name="username" th:value="${user.username}">
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" name="email" th:value="${user.email}">
+                </div>
+                <button type="submit" class="ui primary button">Сохранить</button>
+            </div>
+
+            <!-- смена пароля -->
+            <div class="ui segment">
+                <h4 class="ui dividing header">Смена пароля</h4>
+
+                <div th:if="${isOwnProfile != null and isOwnProfile}" class="field">
+                    <label>Старый пароль</label>
+                    <input type="password" name="oldPassword" autocomplete="new-password" value="" readonly onfocus="this.removeAttribute('readonly');">
+                </div>
+
+                <div class="field">
+                    <label>Новый пароль</label>
+                    <input type="password" name="newPassword" autocomplete="new-password" value="" readonly onfocus="this.removeAttribute('readonly');">
+                </div>
+                <button type="submit" class="ui button">Изменить пароль</button>
+            </div>
+
+            <!-- выбор роли -->
+            <div th:if="${isAdmin}" class="ui segment">
+                <h4 class="ui dividing header">Роль</h4>
+                <div class="field">
+                    <label>Текущая роль</label>
+                    <select name="role" class="ui dropdown">
+                        <option value="user" th:selected="${user.role == 'user'}">user</option>
+                        <option value="admin" th:selected="${user.role == 'admin'}">admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="ui primary button">Сохранить роль</button>
+            </div>
+        </form>
+
+        <!-- статус аккаунта -->
+        <div th:if="${isAdmin and (isOwnProfile == null or !isOwnProfile)}" class="ui segment" style="max-width: 500px; margin-top: 20px;">
+            <h4 class="ui dividing header">Статус аккаунта</h4>
+            <p>
+                Текущий статус:
+                <span th:if="${user.isActive}" style="color: green; font-weight: bold;">Активен</span>
+                <span th:if="${!user.isActive}" style="color: red; font-weight: bold;">Заблокирован</span>
+            </p>
+            <form th:action="@{/dashboard/users/{id}/toggleActive(id=${user.id})}" method="post">
+                <button type="submit"
+                        th:class="${user.isActive} ? 'ui orange button' : 'ui green button'"
+                        th:text="${user.isActive} ? 'Заблокировать' : 'Разблокировать'">
+                </button>
+            </form>
+        </div>
+
+        <!-- Кнопка выхода из аккаунта -->
+        <div th:if="${isOwnProfile != null and isOwnProfile}" class="ui segment" style="max-width: 500px; margin-top: 20px;">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="ui red button fluid">Выйти из аккаунта</button>
+            </form>
+        </div>
+
+        <!-- удаление аккаунта-->
+        <div th:if="${isOwnProfile != null and isOwnProfile}" class="ui segment" style="max-width: 500px; margin-top: 20px;">
+            <h4 class="ui dividing header" style="color: #db2828;"></h4>
+            <form th:action="@{/dashboard/profile/delete}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить.');">
+                <button type="submit" class="ui red button fluid">Удалить аккаунт</button>
+            </form>
+        </div>
+
+        <!-- Кнопка возврата к списку пользователей-->
+        <div th:if="${isOwnProfile == null or !isOwnProfile}" style="max-width: 500px; margin-top: 20px;">
+            <a href="/dashboard/users" class="ui button">Назад к списку пользователей</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

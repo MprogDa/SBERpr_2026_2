@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ввод кода</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 400px;">
+    <h3 class="ui header">Подтверждение кода</h3>
+    <p>Введите код, отправленный на вашу почту.</p>
+
+    <form th:action="@{/recovery/code}" method="post" class="ui form">
+        <div class="field">
+            <label>Код из письма</label>
+            <input type="text" name="code" placeholder="Например: 123456" required>
+        </div>
+        <button type="submit" class="ui primary button fluid">Подтвердить</button>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="/recovery">Запросить код заново</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

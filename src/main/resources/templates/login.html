@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Вход</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 400px;">
+    <h2 class="ui header">Вход в систему</h2>
+
+    <!-- Сообщение об ошибке входа (неверный логин/пароль) -->
+    <div th:if="${param.error}" class="ui negative message">
+        <div class="header">Ошибка входа</div>
+        <p>Неверное имя пользователя или пароль. Попробуйте ещё раз.</p>
+    </div>
+
+    <!-- Сообщение об успешном выходе -->
+    <div th:if="${param.logout}" class="ui positive message">
+        <p>Вы успешно вышли из системы.</p>
+    </div>
+
+    <!-- Сообщение об успешной смене пароля -->
+    <div th:if="${param.passwordChanged}" class="ui positive message">
+        <div class="header">Пароль изменён</div>
+        <p>Вы можете войти с новым паролем.</p>
+    </div>
+
+    <!-- Форма входа -->
+    <form th:action="@{/login}" method="post" class="ui form">
+        <div class="field">
+            <label>Имя пользователя</label>
+            <input type="text" name="username" placeholder="Логин" required>
+        </div>
+        <div class="field">
+            <label>Пароль</label>
+            <input type="password" name="password" placeholder="Пароль" required>
+        </div>
+        <!-- Ссылка на восстановление пароля -->
+        <div style="text-align: right; margin-bottom: 15px;">
+            <a href="/recovery">Восстановление пароля</a>
+        </div>
+        <button type="submit" class="ui primary button fluid">Войти</button>
+        <!-- Ссылка на регистрацию -->
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="/register" class="ui button">Регистрация</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
