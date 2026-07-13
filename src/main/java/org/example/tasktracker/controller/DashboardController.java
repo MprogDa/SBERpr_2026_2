@@ -1,5 +1,6 @@
 package org.example.tasktracker.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.example.tasktracker.entity.Board;
 import org.example.tasktracker.entity.User;
 import org.example.tasktracker.entity.UserBoard;
@@ -17,8 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,6 @@ public class DashboardController {
     @Autowired private UserBoardRepository userBoardRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
-    // список досок
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {
         User currentUser = getCurrentUser(authentication);
@@ -54,7 +52,7 @@ public class DashboardController {
         return "dashboard";
     }
 
-    // Свой профиль
+    // Отображение страницы своего профиля
     @GetMapping("/dashboard/profile")
     public String profile(Authentication authentication, Model model) {
         User currentUser = getCurrentUser(authentication);
@@ -66,7 +64,7 @@ public class DashboardController {
         return "profile";
     }
 
-    // Профиль другого пользователя (только для админа)
+    // Отображение профиля другого пользователя (доступно только админу)
     @GetMapping("/dashboard/users/{id}/profile")
     public String viewUserProfile(@PathVariable("id") Long id, Authentication authentication, Model model) {
         User currentUser = getCurrentUser(authentication);
@@ -83,18 +81,11 @@ public class DashboardController {
         return "profile";
     }
 
-    // Сохранение своего профиля
+    // Сохранение изменений в своем профиле
     @PostMapping("/dashboard/profile")
-    public String profileUpdate(@RequestParam("id") Long id,
-                                @RequestParam("username") String username,
-                                @RequestParam("email") String email,
-                                @RequestParam(value = "oldPassword") String oldPassword,
-                                @RequestParam(value = "newPassword") String newPassword,
-                                @RequestParam(value = "role") String role,
-                                Authentication authentication) {
+    public String profileUpdate(@RequestParam("id") Long id, @RequestParam("username") String username, @RequestParam("email") String email, @RequestParam(value = "oldPassword", required = false) String oldPassword, @RequestParam(value = "newPassword", required = false) String newPassword, Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         if (currentUser == null) return "redirect:/login";
-
         if (!currentUser.getId().equals(id)) {
             return "redirect:/dashboard/profile";
         }
@@ -104,11 +95,6 @@ public class DashboardController {
         currentUser.setUsername(username);
         currentUser.setEmail(email);
 
-        if (role != null && !role.isEmpty()) {
-            currentUser.setRole(role);
-        }
-
-        // Смена пароля с проверкой старого
         if (newPassword != null && !newPassword.isEmpty()) {
             if (oldPassword == null || oldPassword.isEmpty() ||
                     !passwordEncoder.matches(oldPassword, currentUser.getPassword())) {
@@ -118,7 +104,6 @@ public class DashboardController {
         }
 
         userRepository.save(currentUser);
-
         if (usernameChanged) {
             UsernamePasswordAuthenticationToken newAuth =
                     new UsernamePasswordAuthenticationToken(
@@ -132,13 +117,13 @@ public class DashboardController {
         return "redirect:/dashboard/profile";
     }
 
-    // Сохранение профиля другого пользователя (только для админа)
+    // Сохранение изменений в профиле другого пользователя (только для админа)
     @PostMapping("/dashboard/users/{id}/profile")
     public String updateUserProfile(@PathVariable("id") Long id,
                                     @RequestParam("username") String username,
                                     @RequestParam("email") String email,
-                                    @RequestParam(value = "role") String role,
-                                    @RequestParam(value = "newPassword") String newPassword,
+                                    @RequestParam(value = "role", required = false) String role,
+                                    @RequestParam(value = "newPassword", required = false) String newPassword,
                                     Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         if (currentUser == null) return "redirect:/login";
@@ -155,7 +140,6 @@ public class DashboardController {
             targetUser.setRole(role);
         }
 
-        // Админ может менять пароль без проверки старого
         if (newPassword != null && !newPassword.isEmpty()) {
             targetUser.setPassword(passwordEncoder.encode(newPassword));
         }
@@ -165,7 +149,7 @@ public class DashboardController {
         return "redirect:/dashboard/users/" + id + "/profile";
     }
 
-    // Переключение активности пользователя (только для админа)
+    // Переключение статуса активности пользователя (блокировка/разблокировка)
     @PostMapping("/dashboard/users/{id}/toggleActive")
     public String toggleUserActive(@PathVariable("id") Long id, Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
@@ -182,7 +166,7 @@ public class DashboardController {
         return "redirect:/dashboard/users/" + id + "/profile";
     }
 
-    // Деактивация аккаунта
+    // Деактивация (удаление) своего аккаунта
     @PostMapping("/dashboard/profile/delete")
     public String deleteOwnAccount(Authentication authentication, HttpSession session) {
         User currentUser = getCurrentUser(authentication);
@@ -196,7 +180,7 @@ public class DashboardController {
         return "redirect:/?deleted";
     }
 
-    // Список пользователей (только для админа)
+    // Отображение списка всех пользователей (только для админа)
     @GetMapping("/dashboard/users")
     public String users(Authentication authentication, Model model) {
         User currentUser = getCurrentUser(authentication);
@@ -205,19 +189,11 @@ public class DashboardController {
         if (!currentUser.getRole().equalsIgnoreCase("admin")) {
             return "redirect:/dashboard";
         }
+
         model.addAttribute("users", userRepository.findAll());
         return "users";
     }
 
-    // Просмотр доски
-    @GetMapping("/dashboard/board/{id}")
-    public String viewBoard(@PathVariable("id") Long id, Model model) {
-        Board board = boardRepository.findById(id).orElseThrow();
-        model.addAttribute("board", board);
-        return "board_view";
-    }
-
-    // Получение текущего пользователя из сессии
     private User getCurrentUser(Authentication authentication) {
         return userRepository.findByUsername(authentication.getName()).orElse(null);
     }

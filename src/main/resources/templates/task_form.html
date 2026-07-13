@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Задача</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<div class="ui segment" style="width: 500px;">
+    <!-- Заголовок зависит от того, создаётся задача или редактируется -->
+    <h2 class="ui header">
+        <span th:if="${task.id == null}">Создание задачи</span>
+        <span th:if="${task.id != null}">Редактирование задачи</span>
+    </h2>
+
+    <!-- Форма создания/редактирования задачи -->
+    <form th:action="${task.id == null} ? @{/board/{boardId}/task/new(boardId=${board.id})} : @{/task/{id}/edit(id=${task.id})}"
+          method="post" class="ui form">
+
+        <div class="field">
+            <label>Название задачи</label>
+            <input type="text" name="title" th:value="${task.title}" placeholder="Введите название" required>
+        </div>
+
+        <div class="field">
+            <label>Описание (поддерживает Markdown)</label>
+            <textarea name="description" rows="5" placeholder="Описание задачи..." th:text="${task.description}"></textarea>
+        </div>
+
+        <div class="field">
+            <label>Колонка</label>
+            <select name="columnId" class="ui dropdown">
+                <option th:each="column : ${columns}"
+                        th:value="${column.id}"
+                        th:text="${column.title}"
+                        th:selected="${task.column != null and task.column.id == column.id}">
+                    Колонка
+                </option>
+            </select>
+        </div>
+
+        <!-- Кнопки управления -->
+        <div class="ui two buttons" style="margin-top: 20px;">
+            <button type="submit" class="ui primary button">Сохранить</button>
+            <a th:href="@{/dashboard/board/{id}(id=${board.id})}" class="ui button">Отмена</a>
+        </div>
+    </form>
+
+    <!-- Кнопка удаления — только для существующей задачи -->
+    <div th:if="${task.id != null}" style="margin-top: 20px;">
+        <form th:action="@{/task/{id}/delete(id=${task.id})}" method="post"
+              onsubmit="return confirm('Удалить задачу?');">
+            <button type="submit" class="ui red button fluid">Удалить задачу</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
