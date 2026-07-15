@@ -3,11 +3,12 @@
 <head>
     <title th:text="${board.title}">Доска</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <style>
+        body { margin: 0; }
         .board-header {
             background: #f0f2f5;
             padding: 15px 20px;
@@ -16,12 +17,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .board-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
+        .board-title { font-size: 1.5em; font-weight: bold; margin-left: 10px; }
         .board-content {
             display: flex;
             gap: 15px;
@@ -39,7 +35,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .column-header {
             display: flex;
             justify-content: space-between;
@@ -53,9 +48,7 @@
             padding: 3px 5px;
             border-radius: 3px;
         }
-        .column-title:hover {
-            background: #c8ccd4;
-        }
+        .column-title:hover { background: #c8ccd4; }
         .add-task-btn {
             cursor: pointer;
             padding: 3px 8px;
@@ -63,9 +56,7 @@
             font-size: 1.2em;
             color: #333;
         }
-        .add-task-btn:hover {
-            background: #c8ccd4;
-        }
+        .add-task-btn:hover { background: #c8ccd4; }
 
         .task-card {
             background: white;
@@ -73,15 +64,11 @@
             padding: 10px;
             margin-bottom: 8px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            cursor: pointer;
+            cursor: grab;
         }
-        .task-card:hover {
-            background: #e8e8e8;
-        }
-        .task-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+        .task-card:active { cursor: grabbing; }
+        .task-card:hover { background: #e8e8e8; }
+        .task-title { font-weight: bold; margin-bottom: 5px; }
         .task-description {
             color: #666;
             font-size: 0.9em;
@@ -92,6 +79,7 @@
             -webkit-box-orient: vertical;
             margin-bottom: 8px;
         }
+        .task-due-date { font-size: 0.8em; margin-bottom: 5px; font-weight: bold; }
 
         .task-column-select-compact {
             max-width: 160px;
@@ -109,35 +97,50 @@
             background-repeat: no-repeat;
             background-position: right 5px center;
         }
-        .task-column-select-compact:hover {
-            border-color: #888;
-            background-color: #f9f9f9;
-        }
-        .task-column-select-compact:focus {
-            outline: none;
-            border-color: #2185d0;
-        }
+        .task-column-select-compact:hover { border-color: #888; background-color: #f9f9f9; }
+        .task-column-select-compact:focus { outline: none; border-color: #2185d0; }
 
-        .task-due-date {
-            font-size: 0.8em;
-            margin-bottom: 5px;
-            font-weight: bold;
+        .task-info-block {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .comments-list-container {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .comment-item {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 3px solid #2185d0;
+        }
+        .comment-form-container {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
     </style>
 </head>
-<body style="background: #ffffff; margin: 0;">
+<body th:style="${board.color != null} ? 'background-color: ' + ${board.color} + ';' : ''">
 
 <div class="board-header">
     <div>
         <a href="/dashboard" class="ui button" title="Назад к доскам">⬅️</a>
         <span class="board-title" th:text="${board.title}">Название доски</span>
     </div>
-    <button class="ui primary button" onclick="openColumnModal(null, '')">+ Добавить колонку</button>
+    <div>
+        <a th:if="${userRights == 'owner' or userRights == 'editor'}"
+           th:href="@{/dashboard/board/{id}/settings(id=${board.id})}" class="ui button">⚙️ Настройки</a>
+        <button th:if="${userRights == 'owner' or userRights == 'editor'}"
+                class="ui primary button" onclick="openColumnModal(null, '')" style="margin-left: 10px;">+ Добавить колонку</button>
+    </div>
 </div>
 
 <div class="board-content">
-    <div class="column-card" th:each="column : ${columns}">
-
+    <div class="column-card" th:each="column : ${columns}" th:data-column-id="${column.id}">
         <div class="column-header">
             <span class="column-title"
                   th:data-column-id="${column.id}"
@@ -146,16 +149,16 @@
                   ondblclick="openColumnModal(this.getAttribute('data-column-id'), this.getAttribute('data-title'))"
                   th:text="${column.title}">Название</span>
 
-            <span class="add-task-btn"
+            <span th:if="${userRights == 'owner' or userRights == 'editor'}"
+                  class="add-task-btn"
                   th:data-column-id="${column.id}"
                   th:data-board-id="${board.id}"
-                  onclick="openTaskModal(null, '', '', this.getAttribute('data-column-id'))"
+                  onclick="openTaskModal(null, '', '', this.getAttribute('data-column-id'), true)"
                   title="Добавить задачу">+</span>
         </div>
 
-        <!-- Список задач в текущей колонке -->
-        <div th:each="task : ${tasksByColumn[column.id]}">
-            <div class="task-card"
+        <div class="task-list">
+            <div class="task-card" th:each="task : ${tasksByColumn[column.id]}"
                  th:data-task-id="${task.id}"
                  th:data-task-title="${task.title}"
                  th:data-task-description="${task.description}"
@@ -164,7 +167,7 @@
                  th:data-task-author="${task.author.username}"
                  th:data-task-date-create="${task.dateCreate != null ? #temporals.format(task.dateCreate, 'dd.MM.yyyy HH:mm') : ''}"
                  th:data-task-due-date="${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''}"
-                 onclick="openTaskModal(this.getAttribute('data-task-id'), this.getAttribute('data-task-title'), this.getAttribute('data-task-description'), this.getAttribute('data-task-column-id'))">
+                 th:onclick="${userRights != 'viewer'} ? 'openTaskModal(this.getAttribute(\'data-task-id\'), this.getAttribute(\'data-task-title\'), this.getAttribute(\'data-task-description\'), this.getAttribute(\'data-task-column-id\'), true)' : 'openTaskModal(this.getAttribute(\'data-task-id\'), this.getAttribute(\'data-task-title\'), this.getAttribute(\'data-task-description\'), this.getAttribute(\'data-task-column-id\'), false)'">
 
                 <div class="task-title" th:text="${task.title}">Название задачи</div>
                 <div class="task-description" th:text="${task.description}">Описание</div>
@@ -173,16 +176,14 @@
                     📅 <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}">01.01.2026</span>
                 </div>
 
-                <div onclick="event.stopPropagation();" style="margin-top: 5px;">
+                <div th:if="${userRights != 'viewer'}" onclick="event.stopPropagation();" style="margin-top: 5px;">
                     <form th:id="'moveForm-' + ${task.id}" th:action="@{/task/{id}/move(id=${task.id})}" method="post" style="margin: 0;">
                         <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
                         <select name="columnId" class="task-column-select-compact" onchange="moveTask(this)">
                             <option th:each="col : ${columns}"
                                     th:value="${col.id}"
                                     th:text="${col.title}"
-                                    th:selected="${col.id == task.column.id}">
-                                Колонка
-                            </option>
+                                    th:selected="${col.id == task.column.id}">Колонка</option>
                         </select>
                     </form>
                 </div>
@@ -191,7 +192,7 @@
     </div>
 </div>
 
-<!-- Создание, Редактирование колонки -->
+<!-- Создание/Редактирование колонки -->
 <div class="ui modal" id="columnModal">
     <div class="header" id="columnModalTitle">Новая колонка</div>
     <div class="content">
@@ -209,7 +210,7 @@
     </div>
 </div>
 
-<!-- Создание, Редактирование задачи -->
+<!-- Создание/Редактирование задачи -->
 <div class="ui modal" id="taskModal">
     <div class="header" id="taskModalTitle">Новая задача</div>
     <div class="content">
@@ -225,11 +226,7 @@
             <div class="field">
                 <label>Колонка</label>
                 <select name="columnId" id="taskColumnSelect" class="ui dropdown">
-                    <option th:each="column : ${columns}"
-                            th:value="${column.id}"
-                            th:text="${column.title}">
-                        Колонка
-                    </option>
+                    <option th:each="column : ${columns}" th:value="${column.id}" th:text="${column.title}">Колонка</option>
                 </select>
             </div>
             <div class="field">
@@ -237,25 +234,42 @@
                 <input type="date" id="taskDueDateInput">
             </div>
 
-            <!-- Блок с информацией отображается только при редактировании существующей задачи -->
-            <div id="taskInfoBlock" style="display: none; margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 5px;">
-                <div style="margin-bottom: 5px;">
-                    <strong>Автор:</strong> <span id="taskAuthorInfo"></span>
-                </div>
-                <div>
-                    <strong>Дата создания:</strong> <span id="taskDateCreateInfo"></span>
-                </div>
+            <div id="taskInfoBlock" class="task-info-block" style="display: none;">
+                <div style="margin-bottom: 5px;"><strong>Автор:</strong> <span id="taskAuthorInfo"></span></div>
+                <div><strong>Дата создания:</strong> <span id="taskDateCreateInfo"></span></div>
             </div>
         </form>
     </div>
     <div class="actions">
-        <button type="button" class="ui red button" id="deleteTaskBtn" style="display: none;" onclick="deleteTask()">Удалить задачу</button>
-        <button type="button" class="ui button" onclick="closeTaskModal()">Отмена</button>
-        <button type="button" class="ui primary button" onclick="submitTaskForm()">Сохранить</button>
+        <button type="button" class="ui button" id="commentsBtn" style="display: none;" onclick="openCommentsModal(currentTaskId)">💬 Комментарии</button>
+        <div class="ui right floated buttons">
+            <button type="button" class="ui red button" id="deleteTaskBtn" style="display: none;" onclick="deleteTask()">Удалить</button>
+            <button type="button" class="ui button" id="cancelTaskBtn" onclick="closeTaskModal()">Отмена</button>
+            <button type="button" class="ui primary button" id="saveTaskBtn" onclick="submitTaskForm()">Сохранить</button>
+        </div>
     </div>
 </div>
 
-<!-- Подключение библиотек для работы модальных окон Semantic UI -->
+<!-- Комментарии -->
+<div class="ui modal" id="commentsModal">
+    <div class="header">Комментарии к задаче</div>
+    <div class="content comments-list-container">
+        <div id="commentsList" style="margin-bottom: 20px;">
+            <div class="ui active inline loader"></div>
+        </div>
+        <form id="commentForm" class="ui form comment-form-container">
+            <div class="field">
+                <label>Добавить комментарий</label>
+                <textarea id="commentTextInput" name="text" rows="3" placeholder="Введите текст комментария..." required style="resize: vertical;"></textarea>
+            </div>
+            <button type="button" class="ui primary button" onclick="submitComment(currentTaskId)">Отправить</button>
+        </form>
+    </div>
+    <div class="actions">
+        <button type="button" class="ui button" onclick="closeCommentsModal()">Закрыть</button>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
 
@@ -263,16 +277,56 @@
     let currentColumnId = null;
     let currentBoardId = /*[[${board.id}]]*/ null;
     let currentTaskId = null;
-
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-
     const modalSettings = { transition: 'fade', duration: 0 };
 
+    /**
+     *  Drag-and-Drop функционал
+     */
     $(document).ready(function() {
         $('#columnModal').modal(modalSettings);
         $('#taskModal').modal(modalSettings);
-    });
+        $('#commentsModal').modal(modalSettings);
 
+        const taskLists = document.querySelectorAll('.task-list');
+        taskLists.forEach(list => {
+            new Sortable(list, {
+                group: 'shared-tasks',
+                animation: 0,
+                draggable: '.task-card',
+                filter: 'select, .column-header',
+                preventOnFilter: false,
+                onEnd: function (evt) {
+                    const taskId = evt.item.getAttribute('data-task-id');
+                    const oldColumnCard = evt.from.closest('.column-card');
+                    const newColumnCard = evt.to.closest('.column-card');
+
+                    if (!oldColumnCard || !newColumnCard) return;
+
+                    const oldColumnId = oldColumnCard.getAttribute('data-column-id');
+                    const newColumnId = newColumnCard.getAttribute('data-column-id');
+
+                    if (oldColumnId !== newColumnId) {
+                        const formData = new FormData();
+                        formData.append('columnId', newColumnId);
+                        formData.append('_csrf', csrfToken);
+
+                        fetch(`/task/${taskId}/move`, { method: 'POST', body: formData })
+                            .then(response => {
+                                if (!response.ok) {
+                                    alert('Ошибка сервера при перемещении задачи.');
+                                    location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка сети:', error);
+                                location.reload();
+                            });
+                    }
+                }
+            });
+        });
+    });
 
     function submitForm(action, fields) {
         const form = document.createElement('form');
@@ -296,102 +350,125 @@
         document.body.appendChild(form);
         form.submit();
     }
+
     function openColumnModal(columnId, title) {
         currentColumnId = columnId;
         const modal = $('#columnModal');
         const titleInput = document.getElementById('columnTitleInput');
-        const modalTitle = document.getElementById('columnModalTitle');
-        const deleteBtn = document.getElementById('deleteColumnBtn');
 
         if (columnId === null) {
-            modalTitle.textContent = 'Новая колонка';
+            document.getElementById('columnModalTitle').textContent = 'Новая колонка';
             titleInput.value = '';
-            deleteBtn.style.display = 'none';
+            document.getElementById('deleteColumnBtn').style.display = 'none';
         } else {
-            modalTitle.textContent = 'Редактирование колонки';
+            document.getElementById('columnModalTitle').textContent = 'Редактирование колонки';
             titleInput.value = title;
-            deleteBtn.style.display = 'inline-block';
+            document.getElementById('deleteColumnBtn').style.display = 'inline-block';
         }
-
         modal.modal('show');
         setTimeout(() => titleInput.focus(), 50);
     }
 
-    function closeColumnModal() {
-        $('#columnModal').modal('hide');
-    }
+    function closeColumnModal() { $('#columnModal').modal('hide'); }
 
     function submitColumnForm() {
         const title = document.getElementById('columnTitleInput').value.trim();
-        if (title === '') {
-            alert('Введите название колонки');
-            return;
-        }
+        if (!title) { alert('Введите название колонки'); return; }
+
         const action = currentColumnId === null
             ? '/board/' + currentBoardId + '/column/new'
             : '/column/' + currentColumnId + '/edit';
-
         submitForm(action, { title: title });
     }
 
     function deleteColumn() {
-        if (currentColumnId === null) return;
-        if (!confirm('Удалить колонку и все её задачи?')) return;
-
+        if (currentColumnId === null || !confirm('Удалить колонку и все её задачи?')) return;
         submitForm('/column/' + currentColumnId + '/delete', {});
     }
 
-    function openTaskModal(taskId, title, description, columnId) {
+    // --- Управление задачами ---
+
+    function openTaskModal(taskId, title, description, columnId, canEdit) {
         currentTaskId = taskId;
         const modal = $('#taskModal');
         const titleInput = document.getElementById('taskTitleInput');
         const descriptionInput = document.getElementById('taskDescriptionInput');
         const columnSelect = document.getElementById('taskColumnSelect');
         const dueDateInput = document.getElementById('taskDueDateInput');
-        const modalTitle = document.getElementById('taskModalTitle');
+
+        const saveBtn = document.getElementById('saveTaskBtn');
+        const cancelBtn = document.getElementById('cancelTaskBtn');
         const deleteBtn = document.getElementById('deleteTaskBtn');
+        const commentsBtn = document.getElementById('commentsBtn');
         const infoBlock = document.getElementById('taskInfoBlock');
-        if (taskId === null) {
-            modalTitle.textContent = 'Новая задача';
-            titleInput.value = '';
-            descriptionInput.value = '';
-            columnSelect.value = columnId;
-            dueDateInput.value = '';
+
+        titleInput.readOnly = false;
+        descriptionInput.readOnly = false;
+        dueDateInput.readOnly = false;
+        columnSelect.disabled = false;
+        columnSelect.parentElement.style.display = 'block';
+        saveBtn.style.display = 'inline-block';
+
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        const dueDate = taskCard ? taskCard.getAttribute('data-task-due-date') : '';
+        const author = taskCard ? taskCard.getAttribute('data-task-author') : '';
+        const dateCreate = taskCard ? taskCard.getAttribute('data-task-date-create') : '';
+
+        if (!canEdit) {
+            document.getElementById('taskModalTitle').textContent = 'Просмотр задачи';
+            titleInput.value = title || '';
+            descriptionInput.value = description || '';
+            dueDateInput.value = dueDate || '';
+
+            titleInput.readOnly = true;
+            descriptionInput.readOnly = true;
+            dueDateInput.readOnly = true;
+            columnSelect.parentElement.style.display = 'none';
+
             deleteBtn.style.display = 'none';
-            infoBlock.style.display = 'none';
-        } else {
-            modalTitle.textContent = 'Редактирование задачи';
-            titleInput.value = title;
-            descriptionInput.value = description;
-            columnSelect.value = columnId;
+            saveBtn.style.display = 'none';
+            commentsBtn.style.display = 'none';
+            cancelBtn.textContent = 'Закрыть';
 
-            const taskCard = document.querySelector('[data-task-id="' + taskId + '"]');
-            dueDateInput.value = taskCard.getAttribute('data-task-due-date') || '';
-            document.getElementById('taskAuthorInfo').textContent = taskCard.getAttribute('data-task-author');
-            document.getElementById('taskDateCreateInfo').textContent = taskCard.getAttribute('data-task-date-create');
-
+            document.getElementById('taskAuthorInfo').textContent = author;
+            document.getElementById('taskDateCreateInfo').textContent = dateCreate;
             infoBlock.style.display = 'block';
-            deleteBtn.style.display = 'inline-block';
+        } else {
+            document.getElementById('taskModalTitle').textContent = taskId === null ? 'Новая задача' : 'Редактирование задачи';
+
+            if (taskId === null) {
+                titleInput.value = '';
+                descriptionInput.value = '';
+                columnSelect.value = columnId;
+                dueDateInput.value = '';
+                deleteBtn.style.display = 'none';
+                infoBlock.style.display = 'none';
+                commentsBtn.style.display = 'none';
+            } else {
+                titleInput.value = title || '';
+                descriptionInput.value = description || '';
+                columnSelect.value = columnId;
+                dueDateInput.value = dueDate || '';
+
+                document.getElementById('taskAuthorInfo').textContent = author;
+                document.getElementById('taskDateCreateInfo').textContent = dateCreate;
+                infoBlock.style.display = 'block';
+                deleteBtn.style.display = 'inline-block';
+                commentsBtn.style.display = 'inline-block';
+            }
+            cancelBtn.textContent = 'Отмена';
         }
+
         $(columnSelect).dropdown('refresh');
         modal.modal('show');
-        setTimeout(() => titleInput.focus(), 50);
+        if (canEdit && taskId === null) setTimeout(() => titleInput.focus(), 50);
     }
 
-    function closeTaskModal() {
-        $('#taskModal').modal('hide');
-    }
+    function closeTaskModal() { $('#taskModal').modal('hide'); }
 
     function submitTaskForm() {
         const title = document.getElementById('taskTitleInput').value.trim();
-        const description = document.getElementById('taskDescriptionInput').value;
-        const columnId = document.getElementById('taskColumnSelect').value;
-        const dueDate = document.getElementById('taskDueDateInput').value;
-
-        if (title === '') {
-            alert('Введите название задачи');
-            return;
-        }
+        if (!title) { alert('Введите название задачи'); return; }
 
         const action = currentTaskId === null
             ? '/board/' + currentBoardId + '/task/new'
@@ -399,26 +476,79 @@
 
         submitForm(action, {
             title: title,
-            description: description,
-            columnId: columnId,
-            dueDate: dueDate
+            description: document.getElementById('taskDescriptionInput').value,
+            columnId: document.getElementById('taskColumnSelect').value,
+            dueDate: document.getElementById('taskDueDateInput').value
         });
     }
 
     function deleteTask() {
-        if (currentTaskId === null) return;
-        if (!confirm('Удалить задачу?')) return;
-
+        if (currentTaskId === null || !confirm('Удалить задачу?')) return;
         submitForm('/task/' + currentTaskId + '/delete', {});
     }
 
     function moveTask(selectElement) {
         const form = selectElement.closest('form');
-        if (form) {
-            form.submit();
-        }
+        if (form) form.submit();
+    }
+
+    function openCommentsModal(taskId) {
+        currentTaskId = taskId;
+        const commentsList = document.getElementById('commentsList');
+        commentsList.innerHTML = '<div class="ui active inline loader"></div>';
+        $('#commentsModal').modal('show');
+
+        fetch(`/task/${taskId}/comments`)
+            .then(response => response.json())
+            .then(data => {
+                commentsList.innerHTML = '';
+                if (data.length === 0) {
+                    commentsList.innerHTML = '<div style="color: #888; text-align: center; padding: 10px;">Комментариев пока нет.</div>';
+                } else {
+                    data.forEach(c => {
+                        const div = document.createElement('div');
+                        div.className = 'comment-item';
+                        div.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong style="color: #2185d0;">${c.author}</strong>
+                                <small style="color: #888;">${c.date}</small>
+                            </div>
+                            <div style="white-space: pre-wrap; word-wrap: break-word;">${c.text}</div>
+                        `;
+                        commentsList.appendChild(div);
+                    });
+                }
+            })
+            .catch(() => {
+                commentsList.innerHTML = '<div style="color: red; text-align: center;">Ошибка загрузки комментариев</div>';
+            });
+    }
+
+    function closeCommentsModal() { $('#commentsModal').modal('hide'); }
+
+    function submitComment(taskId) {
+        const textInput = document.getElementById('commentTextInput');
+        const text = textInput.value.trim();
+        if (!text) return;
+
+        const formData = new FormData();
+        formData.append('text', text);
+        formData.append('_csrf', csrfToken);
+
+        fetch(`/task/${taskId}/comment`, { method: 'POST', body: formData })
+            .then(response => {
+                if (response.ok) {
+                    textInput.value = '';
+                    openCommentsModal(taskId);
+                } else {
+                    alert('Ошибка при отправке комментария');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка сети:', error);
+                alert('Ошибка сети при отправке комментария');
+            });
     }
 </script>
-
 </body>
 </html>

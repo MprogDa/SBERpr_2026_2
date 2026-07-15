@@ -20,6 +20,9 @@ public class Board {
     @Column(nullable = false)
     private LocalDateTime dateCreate;
 
+    @Column
+    private String color = "#ffffff";
+
     public Board() {
         this.dateCreate = LocalDateTime.now();
     }
@@ -35,4 +38,6 @@ public class Board {
     public void setTitle(String title) { this.title = title; }
     public LocalDateTime getDateCreate() { return dateCreate; }
     public void setDateCreate(LocalDateTime dateCreate) { this.dateCreate = dateCreate; }
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
 }

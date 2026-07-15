@@ -11,7 +11,7 @@ import org.example.tasktracker.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
+/*
 @Component
 public class DataLoader implements CommandLineRunner {
 
@@ -57,4 +57,4 @@ public class DataLoader implements CommandLineRunner {
         columnRepository.save(new BoardColumn("Doing", 2, board2));
         columnRepository.save(new BoardColumn("Done", 3, board2));
     }
-}
+}*/

@@ -60,19 +60,55 @@
             </div>
         </div>
 
-        <!-- Список досок-->
-        <div class="ui grid" style="margin-top: 20px;">
-            <div class="four wide column" th:each="board : ${boards}">
-                <a th:href="@{/dashboard/board/{id}(id=${board.id})}" class="ui fluid card" style="height: 150px;">
-                    <div class="content center aligned">
-                        <div class="header" th:text="${board.title}">Название</div>
-                        <div class="meta">
-                            <span th:text="${#temporals.format(board.dateCreate, 'dd.MM.yyyy')}">Дата</span>
+        <!-- Мои доски -->
+        <div th:if="${not #lists.isEmpty(myBoards)}" style="margin-top: 20px;">
+            <h3 class="ui dividing header">📁 Мои доски</h3>
+            <div class="ui grid">
+                <div class="four wide column" th:each="board : ${myBoards}">
+                    <a th:href="@{/dashboard/board/{id}(id=${board.id})}"
+                       class="ui fluid card"
+                       th:style="${board.color != null} ? 'background-color: ' + ${board.color} + ' !important;' : ''"
+                       style="height: 150px;">
+                        <div class="content center aligned">
+                            <div class="header" th:text="${board.title}">Название</div>
+                            <div class="meta">
+                                <span>Создатель: <strong th:text="${boardOwners[board.id]}">Вы</strong></span><br>
+                                <span th:text="${#temporals.format(board.dateCreate, 'dd.MM.yyyy')}">Дата</span>
+                            </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
             </div>
         </div>
+
+        <!-- Доски к которым есть доступ -->
+        <div th:if="${not #lists.isEmpty(sharedBoards)}" style="margin-top: 30px;">
+            <h3 class="ui dividing header">🔗 Доступные мне доски</h3>
+            <div class="ui grid">
+                <div class="four wide column" th:each="board : ${sharedBoards}">
+                    <a th:href="@{/dashboard/board/{id}(id=${board.id})}"
+                       class="ui fluid card"
+                       th:style="${board.color != null} ? 'background-color: ' + ${board.color} + ' !important;' : ''"
+                       style="height: 150px;">
+                        <div class="content center aligned">
+                            <div class="header" th:text="${board.title}">Название</div>
+                            <div class="meta">
+                                <span>Создатель: <strong th:text="${boardOwners[board.id]}">Имя</strong></span><br>
+                                <span th:text="${#temporals.format(board.dateCreate, 'dd.MM.yyyy')}">Дата</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(myBoards) and #lists.isEmpty(sharedBoards)}" style="margin-top: 20px;">
+            <div class="ui info message">
+                <div class="header">Пока нет досок</div>
+                <p>Создайте свою первую доску или попросите коллегу добавить вас в существующую.</p>
+            </div>
+        </div>
+
     </div>
 </div>
 </body>
